@@ -1,107 +1,134 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tom Sawyer Tracker</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            text-align: center;
-            background-color: #f4f4f4;
-            padding: 20px;
-        }
-        .container {
-            background: white;
-            max-width: 400px;
-            margin: auto;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-        }
-        h1 {
-            color: #d9534f;
-        }
-        h2 {
-            font-size: 40px;
-            color: #5cb85c;
-        }
-        button {
-            background-color: #0275d8;
-            color: white;
-            padding: 10px 20px;
-            border: none;
-            font-size: 16px;
-            cursor: pointer;
-            border-radius: 5px;
-        }
-        button:hover {
-            background-color: #025aa5;
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tom Sawyer Tracker</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      background: linear-gradient(to bottom right, #f0f8ff, #c2e9fb);
+      padding: 20px;
+    }
+    .container {
+      background: white;
+      max-width: 400px;
+      margin: auto;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
+    h1 {
+      color: #007bff;
+    }
+    h2 {
+      font-size: 40px;
+      color: #28a745;
+    }
+    button {
+      background: linear-gradient(to right, #00c6ff, #0072ff);
+      color: white;
+      padding: 12px 24px;
+      border: none;
+      font-size: 18px;
+      border-radius: 8px;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+    button:hover {
+      opacity: 0.9;
+    }
+    .notification {
+      display: none;
+      margin-top: 15px;
+      background: linear-gradient(to right, #fbc2eb, #a6c1ee);
+      padding: 10px;
+      border-radius: 8px;
+      font-weight: bold;
+      color: #333;
+    }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Tom Sawyer Tracker 🏴‍☠️</h1>
-        <p>How many people have found a Tom?</p>
-        <h2 id="countDisplay">Loading...</h2>
-        <button id="clickButton">I've Got a Tom!</button>
-    </div>
+  <div class="container">
+    <h1>Tom Sawyer Tracker 🧼</h1>
+    <p>How many people have found a Tom?</p>
+    <h2 id="countDisplay">Loading...</h2>
+    <button id="clickButton">I found a Tom!</button>
+    <div class="notification" id="thanksNote">🎉 Thanks for reporting your Tom!</div>
+  </div>
 
-    <script type="module">
-        // Import Firebase
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-        import { getFirestore, doc, getDoc, updateDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+    import { getFirestore, doc, getDoc, updateDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
-        // Firebase configuration
-        const firebaseConfig = {
-            apiKey: "AIzaSyDhuPjyhlBZvHsKnpLnBNEJX-A6ZTL66a0",
-            authDomain: "tom-sawyer-counter-and-tracker.firebaseapp.com",
-            projectId: "tom-sawyer-counter-and-tracker",
-            storageBucket: "tom-sawyer-counter-and-tracker.firebasestorage.app",
-            messagingSenderId: "575168355259",
-            appId: "1:575168355259:web:9b6478dd487b1305fac29e"
-        };
+    const firebaseConfig = {
+      apiKey: "AIzaSyDhuPjyhlBZvHsKnpLnBNEJX-A6ZTL66a0",
+      authDomain: "tom-sawyer-counter-and-tracker.firebaseapp.com",
+      projectId: "tom-sawyer-counter-and-tracker",
+      storageBucket: "tom-sawyer-counter-and-tracker.firebasestorage.app",
+      messagingSenderId: "575168355259",
+      appId: "1:575168355259:web:9b6478dd487b1305fac29e"
+    };
 
-        // Initialize Firebase
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const countRef = doc(db, "TomCounter", "clicks");
 
-        // Reference Firestore document
-        const countRef = doc(db, "TomCounter", "clicks");
+    const countDisplay = document.getElementById("countDisplay");
+    const thanksNote = document.getElementById("thanksNote");
+    const clickButton = document.getElementById("clickButton");
 
-        async function updateCounter() {
-            try {
-                const docSnap = await getDoc(countRef);
-                if (docSnap.exists()) {
-                    let currentCount = docSnap.data().count || 0;
-                    await updateDoc(countRef, { count: currentCount + 1 });
-                    document.getElementById("countDisplay").innerText = currentCount + 1;
-                } else {
-                    await setDoc(countRef, { count: 1 });
-                    document.getElementById("countDisplay").innerText = 1;
-                }
-            } catch (error) {
-                console.error("Error updating count:", error);
-            }
+    async function loadCounter() {
+      try {
+        const docSnap = await getDoc(countRef);
+        if (docSnap.exists()) {
+          countDisplay.innerText = docSnap.data().count;
+        } else {
+          countDisplay.innerText = 0;
         }
+      } catch (err) {
+        countDisplay.innerText = "Error!";
+        console.error("Load error:", err);
+      }
+    }
 
-        async function loadCounter() {
-            try {
-                const docSnap = await getDoc(countRef);
-                if (docSnap.exists()) {
-                    document.getElementById("countDisplay").innerText = docSnap.data().count;
-                } else {
-                    document.getElementById("countDisplay").innerText = 0;
-                }
-            } catch (error) {
-                console.error("Error loading count:", error);
-                document.getElementById("countDisplay").innerText = "Error!";
-            }
+    async function updateCounter() {
+      const lastClick = localStorage.getItem("lastTomClick");
+      const now = new Date();
+
+      if (lastClick && new Date(lastClick).getHours() === now.getHours()) {
+        alert("You already reported a Tom this hour! Thanks tho 😎");
+        return;
+      }
+
+      try {
+        const docSnap = await getDoc(countRef);
+        let currentCount = 0;
+        if (docSnap.exists()) {
+          currentCount = docSnap.data().count || 0;
+          await updateDoc(countRef, { count: currentCount + 1 });
+        } else {
+          await setDoc(countRef, { count: 1 });
         }
+        countDisplay.innerText = currentCount + 1;
+        localStorage.setItem("lastTomClick", now);
+        showThanks();
+      } catch (error) {
+        console.error("Update error:", error);
+      }
+    }
 
-        document.getElementById("clickButton").addEventListener("click", updateCounter);
-        loadCounter();
-    </script>
+    function showThanks() {
+      thanksNote.style.display = "block";
+      setTimeout(() => {
+        thanksNote.style.display = "none";
+      }, 3000);
+    }
+
+    clickButton.addEventListener("click", updateCounter);
+    loadCounter();
+  </script>
 </body>
 </html>
