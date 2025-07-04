@@ -11,6 +11,7 @@
       background: linear-gradient(to bottom right, #f0f8ff, #c2e9fb);
       padding: 20px;
     }
+
     .container {
       background: white;
       max-width: 400px;
@@ -19,13 +20,26 @@
       border-radius: 10px;
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
     }
+
     h1 {
       color: #007bff;
     }
-    h2 {
+
+    .count-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      font-size: 24px;
+      margin: 10px 0 20px;
+    }
+
+    #countNumber {
       font-size: 40px;
       color: #28a745;
+      font-weight: bold;
     }
+
     button {
       background: linear-gradient(to right, #00c6ff, #0072ff);
       color: white;
@@ -36,9 +50,11 @@
       cursor: pointer;
       margin-top: 10px;
     }
+
     button:hover {
       opacity: 0.9;
     }
+
     .notification {
       display: none;
       margin-top: 15px;
@@ -52,9 +68,12 @@
 </head>
 <body>
   <div class="container">
-    <h1>Tom Sawyer Tracker 🏴‍☠️</h1>
+    <h1>Tom Sawyer Tracker 🧼</h1>
     <p>How many people have found a Tom?</p>
-    <h2 id="countDisplay">Loading...</h2>
+    <div class="count-row">
+      <div id="countNumber">Loading...</div>
+      <div>Tom sightings</div>
+    </div>
     <button id="clickButton">I found a Tom!</button>
     <div class="notification" id="thanksNote">🎉 Thanks for reporting your Tom!</div>
   </div>
@@ -76,7 +95,7 @@
     const db = getFirestore(app);
     const countRef = doc(db, "TomCounter", "clicks");
 
-    const countDisplay = document.getElementById("countDisplay");
+    const countNumber = document.getElementById("countNumber");
     const thanksNote = document.getElementById("thanksNote");
     const clickButton = document.getElementById("clickButton");
 
@@ -84,12 +103,12 @@
       try {
         const docSnap = await getDoc(countRef);
         if (docSnap.exists()) {
-          countDisplay.innerText = docSnap.data().count;
+          countNumber.innerText = docSnap.data().count;
         } else {
-          countDisplay.innerText = 0;
+          countNumber.innerText = 0;
         }
       } catch (err) {
-        countDisplay.innerText = "Error!";
+        countNumber.innerText = "Error!";
         console.error("Load error:", err);
       }
     }
@@ -112,7 +131,7 @@
         } else {
           await setDoc(countRef, { count: 1 });
         }
-        countDisplay.innerText = currentCount + 1;
+        countNumber.innerText = currentCount + 1;
         localStorage.setItem("lastTomClick", now);
         showThanks();
       } catch (error) {
